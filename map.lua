@@ -1,8 +1,13 @@
 -- Inspired by STI, but even more simple?
 
-local Map = {}
+Map = {}
 
 local mapFolder = ""
+
+local extractFilename = function(str)
+	local a,b,c = string.match(str, "(.-)([^\\/]-%.?([^%.\\/]*))$")
+	return b
+end
 
 function Map:setMapFolder(foldername)
 	mapFolder = foldername
@@ -13,6 +18,7 @@ end
 
 function Map:new(mapName)
 	local map = love.filesystem.load(mapFolder..mapName)
+	assert(map)
 	setfenv(map, {}); map = setmetatable(map(), {__index = Map})
   	map:loadMap()
   	return map
@@ -24,7 +30,8 @@ function Map:loadMap()
 	local gids = {}
 	for i, tileset in ipairs(self.tilesets) do
 		tileset.imagename = tileset.image
-		tileset.image = love.graphics.newImage(mapFolder..tileset.image)
+		print(extractFilename(tileset.image))
+		tileset.image = love.graphics.newImage("img/"..extractFilename(tileset.image))
 		self.spriteBatches[tileset.imagename] = love.graphics.newSpriteBatch(tileset.image, self.width*self.height*#self.layers, "static")
 		tileset.spritebatch = self.spriteBatches[tileset.imagename]
 		tileset.tilesInX= tileset.imagewidth/tileset.tilewidth
@@ -137,4 +144,3 @@ function Map:draw()
 	end
 end
 
-return Map
